@@ -5,6 +5,10 @@ const Coordinator = new mongoose.Schema({
         type: "string",
         required: true
     },
+    name: {
+        type: "string",
+        required: true
+    },
     usn: {
         type: "string",
         required: true
