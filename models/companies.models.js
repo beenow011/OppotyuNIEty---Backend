@@ -1,3 +1,4 @@
+const { application } = require('express');
 const mongoose = require('mongoose');
 
 //comaapny schema includes companyName: "",
@@ -68,6 +69,10 @@ const Company = new mongoose.Schema({
     },
     cutOffXiiPercentage: {
         type: "number",
+    },
+    applicationActive: {
+        type: "Boolean",
+        default: true
     },
     createdAt: {
         type: Date,
