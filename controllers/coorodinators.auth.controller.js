@@ -67,6 +67,10 @@ async function login(req, res, next) {
         if (recoveredAddress.toLowerCase() !== address.toLowerCase()) {
             throw new Error('Signature verification failed');
         }
+        const user = await CoordinatorModel.findOne({ userAddress: address });
+        if (!user) {
+            throw new Error('User not found');
+        }
         const token = jwt.sign({ userAddress: address }, JWT_KEY, { expiresIn: '1h' });
         res.status(200).json({ message: 'Signature verification successful', token });
     } catch (error) {
