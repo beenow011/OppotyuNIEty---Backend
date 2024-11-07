@@ -21,6 +21,10 @@ const Student = new mongoose.Schema({
         type: String,
         required: true
     },
+    documentsCollected: {
+        type: Boolean,
+        default: false
+    },
     createdAt: {
         type: Date,
         default: Date.now
