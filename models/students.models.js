@@ -21,6 +21,10 @@ const Student = new mongoose.Schema({
         type: String,
         required: true
     },
+    resumeCollected: {
+        type: Boolean,
+        default: false
+    },
     documentsCollected: {
         type: Boolean,
         default: false
