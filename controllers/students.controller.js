@@ -75,6 +75,20 @@ async function login(req, res) {
     }
 }
 
+async function getStudentData(req, res) {
+    try {
+        const { address: userAddress } = req.query;
+        const user = await StudentModel.findOne({ userAddress });
+        if (!user) {
+            throw new Error("User not found");
+        }
+        res.status(200).json({ user });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: err.message });
+    }
+}
+
 async function studentStatus(req, res) {
     try {
         const { address: userAddress } = req.query;
@@ -277,4 +291,4 @@ async function getResume(req, res) {
 
 // }
 
-module.exports = { createAccount, login, studentStatus, uploadStudentResume, updateResumeStatus, getResumeStatus, getResume, SetStudentStatus };
+module.exports = { createAccount, login, studentStatus, uploadStudentResume, updateResumeStatus, getResumeStatus, getResume, SetStudentStatus, getStudentData };

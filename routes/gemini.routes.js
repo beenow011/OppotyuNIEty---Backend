@@ -1,11 +1,11 @@
 const express = require('express');
-const { extraxtInfoFromResume } = require('../controllers/gemini.controller');
+const { extraxtInfoFromResume, checkEligibility } = require('../controllers/gemini.controller');
 const { uploadUserImage } = require('../middleware/multer.middleware');
 
 const router = express.Router();
 
 
-router.post('/gemini/fillByResume', uploadUserImage, extraxtInfoFromResume)
+router.post('/gemini/check-eligibility', uploadUserImage, checkEligibility)
 
 
 

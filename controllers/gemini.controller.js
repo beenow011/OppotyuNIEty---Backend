@@ -8,26 +8,39 @@ const { GEMINI_API_KEY } = require("../config/config");
 // phone: "",
 // email: "",
 // coreSkills: [],
-async function extraxtInfoFromResume(req, res) {
+
+const pdf = require("pdf-parse");
+
+async function checkEligibility(req, res) {
     try {
         const fileBuffer = req.file.buffer;  // Multer stores the file buffer in `req.file.buffer`
-        const base64Resume = fileBuffer.toString('base64');  // Convert the buffer to base64 string
+        const base64Resume = fileBuffer.toString("base64");  // Convert the buffer to a base64 string
+
+        async function extractTextFromPdf(pdfBuffer) {
+            const data = await pdf(pdfBuffer);
+            return data.text; // Extracted text content from the PDF
+        }
+
+        const text = await extractTextFromPdf(fileBuffer);
+        const { jd } = req.body;
 
         const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        const model = await genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-        const prompt = `The given base64 encoded resume is: ${base64Resume}, extract the information from the resume in the format :{
-        name, xPercentage, xiiPercentage, cgpa, dob, phone, email, coreSkills: []}`;
+        const prompt = `The given text from resume is: ${text}, and this is the job description: ${jd}. Based on the extracted information from the resume, check the eligibility of the candidate in percentage and provide a small note.`;
 
         const result = await model.generateContent(prompt);
-        const response = await result.response;
-        const text = await response.text(); // Await the text extraction
+        console.log(result?.response?.text);
 
-        return res.status(200).json({ message: "Resume Sent", data: text })
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: err.message });
+        const eligibility = result?.response?.text || "Eligibility information could not be generated";
+        console.log(eligibility);
+
+        return res.status(200).json({ message: "Eligibility Sent", eligibility });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: error.message });
     }
 }
 
-module.exports = { extraxtInfoFromResume };
+module.exports = { checkEligibility };

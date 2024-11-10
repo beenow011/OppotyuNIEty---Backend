@@ -32,11 +32,12 @@ async function addCompany(req, res, next) {
 
 async function getCompanies(req, res, next) {
     try {
+        const { branch } = req.query;
         const pipeline = [
             {
-
                 $match: {
                     applicationActive: true,
+                    ...(branch && { allowedBranches: { $in: [branch] } }) // Check if branch is in allowedBranches
                 },
             },
             {
@@ -50,14 +51,17 @@ async function getCompanies(req, res, next) {
                 },
             },
         ];
+
         const companies = await CompanyModel.aggregate(pipeline);
 
-        res.status(200).json({ companies: companies });
+        res.status(200).json({ companies });
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: error.message });
     }
 }
+
+
 
 async function getCompanyById(req, res, next) {
     try {
