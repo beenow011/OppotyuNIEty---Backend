@@ -1,3 +1,4 @@
+const appliedCompaniesModels = require("../models/appliedCompanies.models");
 const CompanyModel = require("../models/companies.models");
 
 async function addCompany(req, res, next) {
@@ -74,4 +75,50 @@ async function getCompanyById(req, res, next) {
     }
 }
 
-module.exports = { addCompany, getCompanies, getCompanyById }
+async function applyToCompany(req, res, next) {
+    try {
+        const { companyId, eligibilityScore } = req.body;
+        const studentId = req.user._id;
+        const company = await CompanyModel.findById(companyId);
+        if (!company) {
+            throw new Error('Company not found');
+        }
+        const appliedCompany = await appliedCompaniesModels.create({ companyId, studentId, eligibilityScore });
+        if (!appliedCompany) {
+            throw new Error('Error in applying to company');
+        }
+        res.status(200).json({ message: 'Applied to company successfully' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: error.message });
+    }
+}
+
+async function getApplicationStatus(req, res, next) {
+    try {
+        const studentId = req.user._id;
+        const { companyId } = req.query;
+        const applications = await appliedCompaniesModels.find({ studentId, companyId });
+        console.log(applications);
+        if (applications.length > 0)
+            res.status(200).json({ applications, applied: true });
+        else
+            res.status(200).json({ applications, applied: false });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: error.message });
+    }
+}
+
+
+async function getAppliedCompanies(req, res, next) {
+    try {
+        const studentId = req.user._id;
+        const applications = await appliedCompaniesModels.find({ studentId }).populate('companyId');
+        res.status(200).json({ applications });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: error.message });
+    }
+}
+module.exports = { addCompany, getCompanies, getCompanyById, applyToCompany, getApplicationStatus, getAppliedCompanies }
