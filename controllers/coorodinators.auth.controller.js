@@ -86,6 +86,7 @@ async function unapproved(req, res, next) {
         if (!address) {
             throw new Error('Address is required');
         }
+        console.log(address);
         if (address.toLowerCase() !== "0x8119779A622fCBab9c084D9036A5C60A7E7185Fa".toLowerCase()) {
             throw new Error('Address is not valid');
         }

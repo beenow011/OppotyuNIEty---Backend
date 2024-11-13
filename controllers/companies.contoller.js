@@ -68,7 +68,8 @@ async function getCompanyById(req, res, next) {
     try {
         const { companyId } = req.params;
         const company = await CompanyModel.findById(companyId);
-        res.status(200).json({ company: company });
+        const count = await appliedCompaniesModels.countDocuments({ companyId });
+        res.status(200).json({ company: company, count });
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: error.message });
@@ -121,4 +122,15 @@ async function getAppliedCompanies(req, res, next) {
         res.status(500).json({ error: error.message });
     }
 }
-module.exports = { addCompany, getCompanies, getCompanyById, applyToCompany, getApplicationStatus, getAppliedCompanies }
+
+async function allStudentsApplied(req, res, next) {
+    try {
+        const { companyId } = req.query;
+        const applications = await appliedCompaniesModels.find({ companyId }).populate('studentId');
+        res.status(200).json({ applications });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: error.message });
+    }
+}
+module.exports = { addCompany, getCompanies, getCompanyById, applyToCompany, getApplicationStatus, getAppliedCompanies, allStudentsApplied }
