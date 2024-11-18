@@ -1,5 +1,7 @@
 const appliedCompaniesModels = require("../models/appliedCompanies.models");
 const CompanyModel = require("../models/companies.models");
+const resourceModels = require("../models/resource.models");
+const { uploadCloudinary } = require("../utils/cloudinary");
 
 async function addCompany(req, res, next) {
     // companyName: "",
@@ -133,4 +135,61 @@ async function allStudentsApplied(req, res, next) {
         res.status(500).json({ error: error.message });
     }
 }
-module.exports = { addCompany, getCompanies, getCompanyById, applyToCompany, getApplicationStatus, getAppliedCompanies, allStudentsApplied }
+
+async function uploadResource(req, res, next) {
+    try {
+        const { id } = req.params;
+        const { title, resourceType } = req.body;
+
+        if (resourceType === 'file') {
+
+            const file = req.file;
+            if (!file) {
+                throw new Error('Please upload a file');
+            }
+            const pdf = await uploadCloudinary(file.buffer);
+            if (!pdf) {
+                throw new Error('Error in uploading file');
+            }
+            // console.log(url);
+            const resource = await resourceModels.create({ title, resourceType, resourceUrl: pdf.secure_url, resourceOf: id });
+            return res.status(200).json({ message: 'Resource uploaded successfully', resource });
+
+        } else if (resourceType === 'link') {
+            const { resourceUrl } = req.body;
+            const resource = await resourceModels.create({ title, resourceType, resourceUrl, resourceOf: id });
+
+            return res.status(200).json({ message: 'Resource uploaded successfully', resource });
+        }
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: error.message });
+    }
+}
+
+async function getResouces(req, res, next) {
+    try {
+        const { id } = req.query;
+        const resources = await resourceModels.find({ resourceOf: id });
+        res.status(200).json({ resources });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: error.message });
+    }
+}
+
+async function removeResource(req, res, next) {
+    try {
+        const { resourceId } = req.params;
+        const resource = await resourceModels.findByIdAndDelete(resourceId);
+        if (!resource) {
+            throw new Error('Resource not found');
+        }
+        res.status(200).json({ message: 'Resource deleted successfully' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: error.message });
+    }
+}
+
+module.exports = { addCompany, getCompanies, getCompanyById, applyToCompany, getApplicationStatus, getAppliedCompanies, allStudentsApplied, uploadResource, getResouces, removeResource }
