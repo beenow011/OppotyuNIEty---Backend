@@ -2,11 +2,18 @@ const express = require('express');
 
 const app = express();
 const bodyParser = require('body-parser');
+
+//router
 const coodinatorAuth = require('./routes/coordinator.auth.routes.js');
 const companies = require('./routes/companies.routes.js');
 const studentAuth = require('./routes/students.routes.js');
 const geminiAssist = require('./routes/gemini.routes.js');
 const openaiAssist = require('./routes/openai.routes.js');
+const mockInterview = require('./routes/mockInterview.routes.js');
+
+
+
+
 const cors = require('cors');
 const { port, MONGODB_URL } = require('./config/config.js');
 const { connectDB } = require('./db/connect');
@@ -20,6 +27,8 @@ app.use('/api', companies)
 app.use('/api', studentAuth)
 app.use('/api', geminiAssist)
 app.use('/api', openaiAssist)
+app.use('/api', mockInterview)
+
 
 
 
