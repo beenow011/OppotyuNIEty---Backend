@@ -72,4 +72,26 @@ async function checkEligibility(req, res) {
     }
 }
 
-module.exports = { extraxtInfoFromResume, checkEligibility };
+async function answerTheQuestion(req, res) {
+    try {
+        const { question } = req.body;
+        const response = await openai.chat.completions.create({
+            model: 'gpt-4o-mini', // Correct model name use gpt-4-turbo-2024-04-09 in production
+            temperature: 0.1, // Adjust the temperature as needed
+            stream: false,
+            messages: [
+                {
+                    role: 'system',
+                    content: `If interviewer asks the question: ${question}, provide a detailed answer to the question`
+                }
+            ]
+        });
+        const completionResult = response.choices[0].message.content;
+        return res.status(200).json({ message: "Answer Sent", data: completionResult })
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: error.message });
+    }
+}
+
+module.exports = { extraxtInfoFromResume, checkEligibility, answerTheQuestion };

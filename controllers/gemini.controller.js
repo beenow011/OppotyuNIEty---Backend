@@ -43,4 +43,26 @@ async function checkEligibility(req, res) {
     }
 }
 
-module.exports = { checkEligibility };
+async function answerTheQuestion(req, res) {
+    try {
+        const { question } = req.body;
+        // console.log(question);
+        const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+        const model = await genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+        const prompt = `If interviewer asks the question: ${question}. Provide a detailed answer to the question.`;
+
+        const result = await model.generateContent(prompt);
+        console.log(result?.response?.text);
+
+        const answer = result?.response?.text || "Answer could not be generated";
+        console.log(answer);
+
+        return res.status(200).json({ message: "Answer Sent", answer });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: error.message });
+    }
+}
+
+module.exports = { checkEligibility, answerTheQuestion };
