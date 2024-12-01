@@ -97,7 +97,8 @@ async function StartinterviewSession(req, res) {
     try {
         const { sessionId } = req.body;
         const interviewSessions = await InterviewSessionModel.findById(sessionId).populate('companyId').populate('studentId');
-
+        const prevQUestions = await interviewQuestionsModels.find({ company: interviewSessions.companyId._id, round: interviewSessions.interviewType });
+        const context = `PREVIOUS QUESTIONS:${prevQUestions.map((question) => question.questions).join("\n")}`;
         // console.log("4")
         const response = await openai.chat.completions.create({
             model: 'gpt-4o-mini',
@@ -105,9 +106,12 @@ async function StartinterviewSession(req, res) {
             messages: [
                 {
                     role: 'system',
-                    content: `Based on this job description: ${interviewSessions.companyId.jobDescription} and this skills: ${interviewSessions.skills}, Start the mock interview question tailored to the role. Focus on key skills, experiences, and common industry challenges. (1 QUESTION AT A TIME) response format :question`,
+                    content: `conduct a ${interviewSessions.interviewType} round Interview for the company ${interviewSessions.companyId.companyName}. Based on this job description: ${interviewSessions.companyId.jobDescription} and this skills: ${interviewSessions.skills}, Start the mock interview question tailored to the role. Focus on key skills, experiences, and common industry challenges. (1 QUESTION AT A TIME) response format :question`,
 
-                }
+                }, {
+                    role: 'user',
+                    content: context, // Provide the context here
+                },
             ],
         });
 
@@ -146,7 +150,7 @@ async function continueInterviewSession(req, res) {
         if (!msg) {
             throw new Error("Error in saving message");
         }
-        const session = await InterviewSessionModel.findById(sessionId);
+        const session = await InterviewSessionModel.findById(sessionId).populate('companyId');
         if (!session) {
             throw new Error("Session not found");
         }
@@ -165,7 +169,7 @@ async function continueInterviewSession(req, res) {
             messages: [
                 {
                     role: 'system',
-                    content: `Based on this job description: ${session.companyId.jobDescription} and this skills: ${session.skills}, Continue the mock interview question as per context tailored to the role. Focus on key skills, experiences, and common industry challenges. you also have the context to the prevoius conversation (1 question at a time). response format :question`,
+                    content: `Continue a ${session.interviewType} round Interview for the company ${session.companyId.companyName}.Based on this job description: ${session.companyId.jobDescription} and this skills: ${session.skills}, Continue the mock interview question as per context tailored to the role. Focus on key skills, experiences, and common industry challenges. you also have the context to the prevoius conversation (1 question at a time). response format :question`,
 
                 },
                 {
