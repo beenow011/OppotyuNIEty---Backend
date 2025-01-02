@@ -17,7 +17,7 @@ const verifyCoordinator = async (req, res, next) => {
         const { address } = req.query;
         const user = await CoordinatorModel.findOne({ userAddress: address.toLowerCase() });
 
-
+        console.log("1)", user)
 
         if (!user) {
             throw new Error("Invalid Access Token")
