@@ -10,7 +10,8 @@ const studentAuth = require('./routes/students.routes.js');
 const geminiAssist = require('./routes/gemini.routes.js');
 const openaiAssist = require('./routes/openai.routes.js');
 const mockInterview = require('./routes/mockInterview.routes.js');
-const contest = require('./routes/contest.routes.js')
+const contest = require('./routes/contest.routes.js');
+const alumini = require('./routes/alumini.routes.js');
 
 
 
@@ -30,6 +31,7 @@ app.use('/api', geminiAssist)
 app.use('/api', openaiAssist)
 app.use('/api', mockInterview)
 app.use('/api', contest)
+app.use('/api', alumini)
 
 
 

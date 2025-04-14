@@ -1,6 +1,6 @@
 const express = require('express');
 const { verifyCoordinator, verifyStudentOrCoordinator, verifyStudent } = require('../middleware/auth');
-const { uploadInterviewQuestions, getInterviewQuestions, getInterviewQuestionsOfType, createInterviewSession, getInterviewSession, MockInterviewConversation, StartinterviewSession, continueInterviewSession } = require('../controllers/mockInterview.controller');
+const { uploadInterviewQuestions, getInterviewQuestions, getInterviewQuestionsOfType, createInterviewSession, getInterviewSession, MockInterviewConversation, StartinterviewSession, continueInterviewSession, evaluateInterviewSession } = require('../controllers/mockInterview.controller');
 
 
 const router = express.Router();
@@ -13,6 +13,8 @@ router.get('/mock-interview/get-interview-session/:id/:type', verifyStudent, get
 router.post('/mock-interview/start-interview-session', verifyStudent, StartinterviewSession);
 router.post('/mock-interview/continue-interview-conversation', verifyStudent, continueInterviewSession);
 router.post('/mock-interview/get-interview-conversation', verifyStudent, MockInterviewConversation);
+router.get('/mock-interview/mock-interview-evaluation/:id', verifyStudent, evaluateInterviewSession);
+router.post('/mock-interview/evaluate-answer', verifyStudent, evaluateInterviewSession);
 // router.post('/mock-interview/create-interview-session', verifyStudent, createInterviewSession);
 
 module.exports = router;

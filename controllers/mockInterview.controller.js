@@ -218,6 +218,58 @@ async function MockInterviewConversation(req, res) {
     }
 }
 
+async function evaluateInterviewSession(req, res) {
+    try {
+        const { question,
+            answer,
+            sessionId } = req.body;
+        const session = await InterviewSessionModel.findById(sessionId)
+        if (!session) {
+            throw new Error("Session not found");
+        }
+        const sessionQuestions = await MockInterviewConversationModel.find({ sessionId }).sort({ createdAt: -1 }).limit(10);
+        const formattedPrevMessages = sessionQuestions.map((msg) => ({
+            role: msg.isUserMsg ? 'user' : 'assistant',
+            content: msg.message,
+        }));
+        const context = `PREVIOUS CONVERSATION:${formattedPrevMessages.map((msg) => {
+            if (msg.role === 'user') return `User:${msg.content}\n`;
+            return `Assistant:${msg.content}\n`;
+        })}`;
+        const response = await openai.chat.completions.create({
+            model: 'gpt-4o-mini',
+            temperature: 0.7, // Adjust the temperature as needed
+            messages: [
+                {
+                    role: 'system',
+                    content: `Evaluate the answer for the question: ${question} asked in the ${session.interviewType} round Interview. answer is : ${answer}. response format :feedback`,
+                },
+                {
+                    role: 'user',
+                    content: context, // Provide the context here
+                },
+            ],
+        });
+        if (response.choices[0].message.content) {
+            await MockInterviewConversationModel.create({
+                sessionId,
+                message: response.choices[0].message.content,
+                isUserMsg: false,
+            });
+            const completionResult = response.choices[0].message.content
+            return res.status(200).json({ message: "Interview started", data: completionResult })
+        } else {
+            throw new Error("No response")
+        }
+    }
+    catch (err) {
+        console.error(err);
+        res.status(500).json({ error: err.message });
+    }
+
+}
+
+
 module.exports = {
     uploadInterviewQuestions,
     getInterviewQuestions,
@@ -226,5 +278,5 @@ module.exports = {
     StartinterviewSession,
     continueInterviewSession,
     getInterviewSession,
-    MockInterviewConversation
+    MockInterviewConversation, evaluateInterviewSession
 }

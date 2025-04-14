@@ -6,6 +6,7 @@
 const Jwt = require("jsonwebtoken");
 const CoordinatorModel = require("../models/coordinator.models");
 const StudentModel = require("../models/students.models");
+const AluminiModel = require("../models/alumini.models");
 
 
 const verifyCoordinator = async (req, res, next) => {
@@ -96,5 +97,27 @@ const verifyStudentOrCoordinator = async (req, res, next) => {
 
 }
 
+const verifyAlumini = async (req, res, next) => {
 
-module.exports = { verifyCoordinator, verifyStudent, verifyStudentOrCoordinator };
+    try {
+
+        // console.log(req.cookies)
+
+        const { address } = req.query;
+        const user = await AluminiModel.findOne({ userAddress: address.toLowerCase() });
+
+        if (!user) {
+            throw new Error("Invalid Access Token")
+        }
+
+        req.user = user;
+        next()
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: error.message });
+    }
+
+}
+
+
+module.exports = { verifyCoordinator, verifyStudent, verifyStudentOrCoordinator, verifyAlumini };
